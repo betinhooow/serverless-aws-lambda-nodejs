@@ -2,6 +2,8 @@
 
 const AWS = require('aws-sdk');
 const sharp = require('sharp');
+const { basename, extname } = require('path');
+
 const S3 = new AWS.S3();
 
 module.exports.handle = async ({ Records: records }, context) => {
@@ -19,6 +21,12 @@ module.exports.handle = async ({ Records: records }, context) => {
         .toFormat('jpeg', { progressive: true, quality: 50 })
         .toBuffer()
 
+      await S3.putObject({
+        Body: optimized,
+        Bucket: process.env.buckect,
+        ContentType: 'image/jpeg',
+        Key: `compressed/${basename(key, extname(key))}.jpg`
+      }).promise();
     }));
 
     return {
